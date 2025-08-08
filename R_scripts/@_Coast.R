@@ -1,17 +1,17 @@
-rm(list=ls())                                                                 # Wipe the brain
+rm(list = ls()) # Wipe the brain
 
-Packages <- c("tidyverse", "sf", "stars", "raster")                           # List handy data packages
-lapply(Packages, library, character.only = TRUE)                              # Load packages
+Packages <- c("tidyverse", "sf", "stars", "raster") # List handy data packages
+lapply(Packages, library, character.only = TRUE) # Load packages
 
-base <- raster("../../Barents Sea/Data/GEBCO_2019.nc")                        # Import bathymetry
+base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
 
-coast <- read_stars("./data/GEBCO_2020_TID.nc") %>% 
-  .[st_bbox(as(extent(-110, 120, 30, 89), "SpatialPolygons"))] %>% 
-  st_as_stars(downsample = 3) %>% 
-  st_as_sf(as_points = FALSE, merge = TRUE) %>% 
-  filter(GEBCO_2020_TID.nc == 0) %>%                                          # Land is coded as 0
-  rename(TID = GEBCO_2020_TID.nc) %>% 
-  st_cast("LINESTRING")
+coast <- read_stars("./data/GEBCO_2020_TID.nc") %>%
+    .[st_bbox(as(extent(-110, 120, 30, 89), "SpatialPolygons"))] %>%
+    st_as_stars(downsample = 3) %>%
+    st_as_sf(as_points = FALSE, merge = TRUE) %>%
+    filter(GEBCO_2020_TID.nc == 0) %>% # Land is coded as 0
+    rename(TID = GEBCO_2020_TID.nc) %>%
+    st_cast("LINESTRING")
 
 st_crs(coast) <- crs(base)
 

@@ -184,7 +184,7 @@ hab_p <- ggplot() +
     scale_fill_manual(values = G_Y2) +
     coord_sf(ylim = c(window["ymin"], window["ymax"]), xlim = c(window["xmin"], window["xmax"]), expand = F) +
     theme_minimal() +
-    # theme(text = element_text(family = "Avenir", size = 9),
+    # theme(text = element_text(, size = 9),
     #       panel.border = element_rect(colour = "black", fill = NA, size = 1),
     #       legend.position = c(0.15, 0.07),
     #       legend.key.size = unit(0.3, "cm")) +
@@ -217,7 +217,7 @@ rock_p <- ggplot() +
     scale_fill_gradient(low = "white", high = "#8c17ae", na.value = NA, labels = scales::percent) +
     coord_sf(ylim = c(window["ymin"], window["ymax"]), xlim = c(window["xmin"], window["xmax"]), expand = F) +
     theme_minimal() +
-    theme( # text = element_text(family = "Avenir", size = 9),
+    theme( # text = element_text(, size = 9),
         # legend.position = c(0.15, 0.07),
         # legend.key.size = unit(0.3, "cm"),
         # panel.border = element_rect(colour = "black", fill = NA, size = 1),
