@@ -2,15 +2,14 @@
 
 rm(list = ls()) # Wipe the brain
 
-Packages <- c("tidyverse", "sf", "raster", "stars") # List handy data packages
+Packages <- c("tidyverse", "sf", "terra", "stars") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
-domain <- readRDS("./data/Mauritania-Senegal Domain.rds")
+domain <- readRDS("./data/Western Sahara Domain.rds")
 
 buffer <- summarise(domain, area = mean(st_area(domain))) %>%
-    st_make_valid() %>%
     st_buffer(dist = 80000)
 
 ggplot() +
@@ -19,7 +18,7 @@ ggplot() +
 
 window <- st_bbox(buffer)
 
-clip <- c(-20, -13, 9, 25) %>%
+clip <- c(-20, -11, 18, 28) %>%
     extent() %>%
     as("SpatialPolygons")
 crs(clip) <- crs(base) # Match crs to bathymetry
@@ -44,8 +43,7 @@ plot(star)
 
 star2 <- st_as_stars(star) %>%
     st_as_sf(as_points = FALSE, merge = TRUE) %>%
-    st_transform(crs = st_crs(domain)) %>%
-    sfheaders::sf_remove_holes()
+    st_transform(crs = st_crs(domain))
 
 #### Plotting ####
 
@@ -58,12 +56,12 @@ ggplot() +
     geom_sf(data = star2, fill = "black", size = 0) +
     geom_sf(data = line, colour = "grey69") +
     scale_fill_manual(values = G_Y2) +
-    coord_sf(ylim = c(window["ymin"], window["ymax"]), xlim = c(window["xmin"] - 2, window["xmax"] + 2), expand = F) +
+    coord_sf(ylim = c(window["ymin"], window["ymax"]), xlim = c(window["xmin"] - 1, window["xmax"] + 1), expand = F) +
     theme_minimal() +
     theme(
         text = element_text(, size = 10),
         panel.border = element_rect(colour = "black", fill = NA, size = 1),
-        legend.position = c(0.75, 0.35),
+        legend.position = c(0.75, 0.1),
         #  legend.key = element_rect(colour = NA),
         legend.key.size = unit(0.3, "cm")
     ) +
@@ -79,9 +77,9 @@ ggplot() +
         x = NULL, y = NULL
     ) +
     annotate("text",
-        label = "900 m", x = window["xmin"] + .5, y = window["ymax"] - 2,
+        label = "900 m", x = window["xmin"] + .5, y = window["ymin"] + .7,
         vjust = 0, hjust = 0, angle = -45, size = 3, colour = "grey69"
     ) +
     NULL
 
-ggsave("./img/Mauritania-Senegal.png", width = 11, height = 11, units = "cm", dpi = 500, bg = "white")
+ggsave("./outputs/Western_Sahara.png", width = 11, height = 11, units = "cm", dpi = 500, bg = "white")

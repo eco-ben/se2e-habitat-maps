@@ -36,18 +36,14 @@ ggplot() +
 
 window <- st_bbox(buffer)
 window_extent <- window %>%
-    extent() %>%
-    as("SpatialPolygons")
+    ext()
 
 clip <- st_bbox(buffer) %>%
     .[c("xmin", "xmax", "ymin", "ymax")] %>%
     as.numeric() %>%
-    extent() %>%
-    as("SpatialPolygons")
+    ext()
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
-
-crs(clip) <- crs(base) # Match crs to bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 base <- crop(base, clip) # Crop bathymetry
 
@@ -66,8 +62,8 @@ land <- rast("./data/GEBCO_2020_TID.nc") %>%
     crop(., window_extent) %>%
     st_as_stars() %>%
     st_as_sf(as_points = FALSE, merge = TRUE) %>%
-    filter(GEBCO_2020_TID.nc == 0) %>% # Land is coded as 0
-    rename(TID = GEBCO_2020_TID.nc)
+    filter(tid == 0) %>% # Land is coded as 0
+    rename(TID = tid)
 
 st_crs(land) <- crs(base)
 
@@ -115,7 +111,7 @@ domain %>%
 #### Add Rock ####
 
 rock <- read.csv("./data/roberts_rock.csv") %>%
-    rasterFromXYZ() %>%
+    rast() %>%
     st_as_stars()
 
 st_crs(rock) <- st_crs(domain)
@@ -163,4 +159,4 @@ rock_p
 
 hab_p + rock_p
 
-ggsave("./img/Irish.png", width = 14.5, height = 13, units = "cm", dpi = 500)
+ggsave("./outputs/Irish.png", width = 14.5, height = 13, units = "cm", dpi = 500)

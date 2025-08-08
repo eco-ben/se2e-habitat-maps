@@ -2,7 +2,7 @@
 
 rm(list = ls()) # Wipe the brain
 
-Packages <- c("tidyverse", "sf", "raster", "stars", "patchwork") # List handy data packages
+Packages <- c("tidyverse", "sf", "terra", "stars", "patchwork") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
 data <- read.csv("./data/roberts_regions.csv") %>%
@@ -12,7 +12,7 @@ data <- read.csv("./data/roberts_regions.csv") %>%
 
 labels <- distinct(data[["English Channel"]][, c("Code", "Type")])
 
-domain <- rasterFromXYZ(data[["English Channel"]][, c(2, 3, 5)], digits = 3) %>%
+domain <- rast(data[["English Channel"]][, c(2, 3, 5)], digits = 3) %>%
     st_as_stars() %>%
     st_as_sf(as_points = F, merge = T) %>%
     group_by(Code) %>%
@@ -35,36 +35,19 @@ ggplot() +
     geom_sf(data = domain, colour = "yellow")
 
 window <- st_bbox(buffer)
+window_extent <- window %>%
+    ext()
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 st_crs(domain) <- crs(base)
 
-# clip <-st_bbox(buffer) %>%
-#   .[c("xmin", "xmax", "ymin", "ymax")] %>%
-#   as.numeric() %>%
-#   extent() %>%
-#   as("SpatialPolygons")
-#
-# crs(clip) <- crs(base)                                                         # Match crs to bathymetry
-#
-# base <- crop(base, clip)                                                       # Crop bathymetry
-#
-# plot(base)
-#
-# line <- rasterToContour(base, levels = c(-400)) %>%
-#   st_as_sf()
-#
-# ggplot() +
-#   geom_sf(data = line) +
-#   geom_sf(data = domain, fill = "red")
-
-land <- read_stars("./data/GEBCO_2020_TID.nc") %>%
+land <- rast("./data/GEBCO_2020_TID.nc") %>%
+    crop(., window_extent) %>%
     st_as_stars() %>%
-    .[window] %>%
     st_as_sf(as_points = FALSE, merge = TRUE) %>%
-    filter(GEBCO_2020_TID.nc == 0) %>% # Land is coded as 0
-    rename(TID = GEBCO_2020_TID.nc)
+    filter(tid == 0) %>% # Land is coded as 0
+    rename(TID = tid)
 
 st_crs(land) <- crs(base)
 
@@ -115,7 +98,7 @@ domain %>%
 #### Add Rock ####
 
 rock <- read.csv("./data/roberts_rock.csv") %>%
-    rasterFromXYZ() %>%
+    rast() %>%
     st_as_stars()
 
 st_crs(rock) <- st_crs(domain)
@@ -166,4 +149,4 @@ rock_p
 
 hab_p + rock_p
 
-ggsave("./img/Channel.png", width = 16, height = 8, units = "cm", dpi = 500)
+ggsave("./outputs/Channel.png", width = 16, height = 8, units = "cm", dpi = 500)

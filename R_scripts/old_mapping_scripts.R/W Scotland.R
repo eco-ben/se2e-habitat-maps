@@ -12,7 +12,7 @@ data <- read.csv("./data/roberts_regions.csv") %>%
 
 labels <- distinct(data[["West of Scotland"]][, c("Code", "Type")])
 
-domain <- rasterFromXYZ(data[["West of Scotland"]][, c(2, 3, 5)], digits = 3) %>%
+domain <- rast(data[["West of Scotland"]][, c(2, 3, 5)], digits = 3) %>%
     st_as_stars() %>%
     st_as_sf(as_points = F, merge = T) %>%
     group_by(Code) %>%
@@ -42,7 +42,7 @@ clip <- st_bbox(buffer) %>%
     extent() %>%
     as("SpatialPolygons")
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 crs(clip) <- crs(base) # Match crs to bathymetry
 
@@ -63,8 +63,8 @@ land <- read_stars("./data/GEBCO_2020_TID.nc") %>%
     st_as_stars() %>%
     .[window] %>%
     st_as_sf(as_points = FALSE, merge = TRUE) %>%
-    filter(GEBCO_2020_TID.nc == 0) %>% # Land is coded as 0
-    rename(TID = GEBCO_2020_TID.nc)
+    filter(tid == 0) %>% # Land is coded as 0
+    rename(TID = tid)
 
 st_crs(land) <- crs(line)
 
@@ -117,7 +117,7 @@ domain %>%
 #### Add Rock ####
 
 rock <- read.csv("./data/roberts_rock.csv") %>%
-    rasterFromXYZ() %>%
+    rast() %>%
     st_as_stars()
 
 st_crs(rock) <- st_crs(domain)
@@ -171,4 +171,4 @@ rock_p
 
 hab_p + rock_p
 
-ggsave("./img/W Scotland.png", width = 14, height = 11, units = "cm", dpi = 500)
+ggsave("./outputs/W Scotland.png", width = 14, height = 11, units = "cm", dpi = 500)

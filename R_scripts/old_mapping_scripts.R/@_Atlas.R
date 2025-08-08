@@ -2,10 +2,10 @@
 
 rm(list = ls()) # Wipe the brain
 
-Packages <- c("tidyverse", "sf", "raster", "rayshader") # List handy data packages
+Packages <- c("tidyverse", "sf", "terra", "rayshader") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 GL <- readRDS("./data/Greenland Sea Habitats.rds") %>%
     st_transform(crs = 3035) %>%
@@ -67,7 +67,7 @@ proj <- rgdal::make_EPSG() %>% # Get proj4 strings from epsg codes
 base2 <- projectRaster(base, crs = proj$prj4) %>% # Reproject to project projection
     as.data.frame(xy = T) %>% # Convert to a data frame
     drop_na() %>% # Drop NAs
-    rasterFromXYZ(crs = proj$prj4) # Back to Raster (with no empty border)
+    rast(crs = proj$prj4) # Back to Raster (with no empty border)
 
 # plot(base2)                                                                   # Visual check
 

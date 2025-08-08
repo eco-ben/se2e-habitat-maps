@@ -5,7 +5,7 @@ rm(list = ls()) # Wipe the brain
 Packages <- c("tidyverse", "sf", "terra", "stars") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 domain <- readRDS("./data/Norwegian Shelf Domain.rds")
 
@@ -17,17 +17,20 @@ ggplot() +
     geom_sf(data = domain, colour = "yellow")
 
 window <- st_bbox(buffer)
+window_extent <- window %>%
+    ext()
 
-clip <- c(-10, 25, 55.4, 75) %>%
-    extent() %>%
-    as("SpatialPolygons")
-crs(clip) <- crs(base) # Match crs to bathymetry
+clip <- st_transform(buffer, crs = 4326) %>%
+    st_bbox() %>%
+    .[c("xmin", "xmax", "ymin", "ymax")] %>%
+    as.numeric() %>%
+    ext()
 
 base <- crop(base, clip) # Crop bathymetry
 
 plot(base)
 
-line <- rasterToContour(base, levels = c(-600)) %>%
+line <- as.contour(base, levels = c(-600)) %>%
     st_as_sf() %>%
     st_transform(crs = 3035)
 
@@ -85,7 +88,7 @@ ggplot() +
     ) +
     NULL
 
-# ggsave("./img/Norewgian_Shelf.png", width = 11, height = 11, units = "cm", dpi = 500, bg = "white")
+# ggsave("./outputs/Norewgian_Shelf.png", width = 11, height = 11, units = "cm", dpi = 500, bg = "white")
 
 #### App ####
 
@@ -121,4 +124,4 @@ ggplot() +
     ) +
     NULL
 
-ggsave("./img/Norewgian_Shelf_app.png", width = 11, height = 11, units = "cm", dpi = 500)
+ggsave("./outputs/Norewgian_Shelf_app.png", width = 11, height = 11, units = "cm", dpi = 500)

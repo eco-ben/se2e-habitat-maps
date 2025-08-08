@@ -98,7 +98,7 @@ ggplot() +
     ) +
     NULL
 
-# ggsave("./img/Barents.png", width = 11, height = 11, units = "cm", dpi = 500)
+# ggsave("./outputs/Barents.png", width = 11, height = 11, units = "cm", dpi = 500)
 
 #### For app ####
 

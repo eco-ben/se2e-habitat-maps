@@ -38,18 +38,14 @@ ggplot() +
 
 window <- st_bbox(buffer)
 window_extent <- window %>%
-    extent() %>%
-    as("SpatialPolygons")
+    ext()
 
 clip <- st_bbox(buffer) %>%
     .[c("xmin", "xmax", "ymin", "ymax")] %>%
     as.numeric() %>%
-    extent() %>%
-    as("SpatialPolygons")
+    ext()
 
 base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
-
-crs(clip) <- crs(base) # Match crs to bathymetry
 
 base <- crop(base, clip) # Crop bathymetry
 
@@ -120,7 +116,7 @@ domain %>%
 #### Add Rock ####
 
 rock <- read.csv("./data/roberts_rock.csv") %>%
-    rasterFromXYZ() %>%
+    rast() %>%
     st_as_stars()
 
 st_crs(rock) <- st_crs(domain)
@@ -172,7 +168,7 @@ rock_p
 
 hab_p + rock_p
 
-# ggsave("./img/Celtic.png", width = 16, height = 11, units = "cm", dpi = 500)
+# ggsave("./outputs/Celtic.png", width = 16, height = 11, units = "cm", dpi = 500)
 
 #### App ####
 
@@ -250,4 +246,4 @@ hab_p + rock_p & theme_minimal() & theme(
     legend.key.size = unit(0.3, "cm")
 )
 
-ggsave("./img/Celtic_app.png", width = 16, height = 11, units = "cm", dpi = 500)
+ggsave("./outputs/Celtic_app.png", width = 16, height = 11, units = "cm", dpi = 500)

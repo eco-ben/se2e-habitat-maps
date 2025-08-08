@@ -2,7 +2,7 @@
 
 rm(list = ls()) # Wipe the brain
 
-Packages <- c("tidyverse", "sf", "raster", "stars") # List handy data packages
+Packages <- c("tidyverse", "sf", "terra", "stars") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
 theme_BES <- function() {
@@ -27,7 +27,7 @@ theme_BES <- function() {
 }
 
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 domain <- readRDS("./data/Greenland Sea Habitats.rds") %>%
     st_transform(crs = 3035) %>%
@@ -35,9 +35,7 @@ domain <- readRDS("./data/Greenland Sea Habitats.rds") %>%
     sfheaders::sf_remove_holes()
 
 clip <- c(-75, 5, 59, 87) %>%
-    extent() %>%
-    as("SpatialPolygons")
-crs(clip) <- crs(base) # Match crs to bathymetry
+    ext()
 
 base <- crop(base, clip) # Crop bathymetry
 
@@ -62,4 +60,4 @@ ggplot() +
     labs(x = NULL, y = NULL) +
     NULL
 
-ggsave("./img/Greenland BES22.svg", width = 21, height = 11, units = "cm", bg = "transparent")
+ggsave("./outputs/Greenland BES22.svg", width = 21, height = 11, units = "cm", bg = "transparent")

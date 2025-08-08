@@ -19,4 +19,4 @@ library(sf) # Load sf to plot polygons quickly
 plot(habitats)
 
 library(raster) # Load raster to plot raster quickly
-plot(rasterFromXYZ(rock))
+plot(rast(rock))

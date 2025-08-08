@@ -5,31 +5,34 @@ rm(list = ls()) # Wipe the brain
 Packages <- c("tidyverse", "sf", "terra", "stars") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
-domain <- readRDS("./data/South Africa Domain.rds")
+domain <- readRDS("./data/Mauritania-Senegal Domain.rds")
 
 buffer <- summarise(domain, area = mean(st_area(domain))) %>%
-    st_buffer(dist = 20000)
+    st_make_valid() %>%
+    st_buffer(dist = 80000)
 
 ggplot() +
     geom_sf(data = buffer) +
     geom_sf(data = domain, colour = "yellow")
 
 window <- st_bbox(buffer)
+window_extent <- window %>%
+    ext()
 
-clip <- c(10, 33, -40, -25) %>%
-    extent() %>%
-    as("SpatialPolygons")
-crs(clip) <- crs(base) # Match crs to bathymetry
+clip <- st_bbox(buffer) %>%
+    .[c("xmin", "xmax", "ymin", "ymax")] %>%
+    as.numeric() %>%
+    ext()
 
 base <- crop(base, clip) # Crop bathymetry
 
 plot(base)
 
-line <- rasterToContour(base, levels = c(-800)) %>%
+line <- as.contour(base, levels = c(-900)) %>%
     st_as_sf() %>%
-    st_transform(crs = 4222)
+    st_transform(crs = st_crs(domain))
 
 ggplot() +
     geom_sf(data = line) +
@@ -43,7 +46,8 @@ plot(star)
 
 star2 <- st_as_stars(star) %>%
     st_as_sf(as_points = FALSE, merge = TRUE) %>%
-    st_transform(crs = 4222)
+    st_transform(crs = st_crs(domain)) %>%
+    sfheaders::sf_remove_holes()
 
 #### Plotting ####
 
@@ -56,12 +60,12 @@ ggplot() +
     geom_sf(data = star2, fill = "black", size = 0) +
     geom_sf(data = line, colour = "grey69") +
     scale_fill_manual(values = G_Y2) +
-    coord_sf(ylim = c(window["ymin"], window["ymax"]), xlim = c(window["xmin"], window["xmax"]), expand = F) +
+    coord_sf(ylim = c(window["ymin"], window["ymax"]), xlim = c(window["xmin"] - 2, window["xmax"] + 2), expand = F) +
     theme_minimal() +
     theme(
         text = element_text(, size = 10),
         panel.border = element_rect(colour = "black", fill = NA, size = 1),
-        legend.position = c(0.75, 0.9),
+        legend.position = c(0.75, 0.35),
         #  legend.key = element_rect(colour = NA),
         legend.key.size = unit(0.3, "cm")
     ) +
@@ -77,9 +81,9 @@ ggplot() +
         x = NULL, y = NULL
     ) +
     annotate("text",
-        label = "800 m", x = window["xmin"] + 11, y = window["ymin"] + 1.8,
-        vjust = 0, hjust = 0, angle = 25, size = 3, colour = "grey69"
+        label = "900 m", x = window["xmin"] + .5, y = window["ymax"] - 2,
+        vjust = 0, hjust = 0, angle = -45, size = 3, colour = "grey69"
     ) +
     NULL
 
-ggsave("./img/South_Africa.png", width = 11, height = 11, units = "cm", dpi = 500, bg = "white")
+ggsave("./outputs/Mauritania-Senegal.png", width = 11, height = 11, units = "cm", dpi = 500, bg = "white")

@@ -2,10 +2,10 @@
 
 rm(list = ls()) # Wipe the brain
 
-Packages <- c("tidyverse", "sf", "raster", "stars") # List handy data packages
+Packages <- c("tidyverse", "sf", "terra", "stars") # List handy data packages
 lapply(Packages, library, character.only = TRUE) # Load packages
 
-base <- rast("../../Barents Sea/Data/GEBCO_2019.nc") # Import bathymetry
+base <- rast("./data/GEBCO_2020.nc") # Import bathymetry
 
 domain <- readRDS("./data/Greenland Sea Habitats.rds") %>%
     st_transform(crs = 3035)
@@ -18,6 +18,8 @@ ggplot() +
     geom_sf(data = domain, colour = "yellow")
 
 window <- st_bbox(buffer)
+window_extent <- window %>%
+    ext()
 
 clip <- # st_bbox(st_transform(buffer, 4326)) %>%
     #  .[c("xmin", "xmax", "ymin", "ymax")] %>%
@@ -26,15 +28,13 @@ clip <- # st_bbox(st_transform(buffer, 4326)) %>%
     #  c(0, 96, 55, 83) %>%
     #  c(0, 97.7, 55.47, 82.9) %>%
     #  c(0, 98, 55.4, 83) %>%
-    extent() %>%
-    as("SpatialPolygons")
-crs(clip) <- crs(base) # Match crs to bathymetry
+    ext()
 
 base <- crop(base, clip) # Crop bathymetry
 
 plot(base)
 
-line <- rasterToContour(base, levels = c(-400)) %>%
+line <- as.contour(base, levels = c(-400)) %>%
     st_as_sf() %>%
     st_transform(crs = 3035)
 
@@ -87,7 +87,7 @@ ggplot() +
     guides(fill = guide_legend(
         ncol = 2, title.hjust = 0.5, title.position = "left",
         title.theme = element_text(angle = 90, size = 8, colour = "white"),
-        label.theme = element_text(size = 6, colour = "whithttp://127.0.0.1:42737/graphics/f445a38a-f68f-4ab3-9466-7fcb2c23a2ae.pnge"),
+        label.theme = element_text(size = 6, colour = "white"),
         #                             override.aes = list(colour = NA))) +
         override.aes = list(colour = "black")
     )) +
@@ -102,4 +102,4 @@ ggplot() +
     ) +
     NULL
 
-# ggsave("Greenland.png", width = 11, height = 11, units = "cm", dpi = 500)
+ggsave("Greenland.png", width = 11, height = 11, units = "cm", dpi = 500)
