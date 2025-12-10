@@ -1,5 +1,9 @@
 source("./R_scripts/mapping_functions.R")
 
+# Due to the high latitude of the Barents Sea domain, mapping in a projected Coordinate
+# Reference System appears more appropriate. The habitat data for the Barents Sea was
+# projected from unprojected EPSG:4326 to projected EPSG:3035 (https://epsg.io/3035).
+# Therefore, buffer_dist distance must be provided in metres instead of degrees.
 Barents_Sea <- data.frame(
     domain_data_fn = "./data/Barents Sea Habitats projected.rds",
     region_name = "Barents Sea",
